@@ -1,0 +1,37 @@
+'use strict'
+
+process.on('uncaughtException', (err) => {
+  console.error(err)
+})
+
+const path = require('path')
+const mkdirp = require('mkdirp')
+
+const ConverterService = require(path.join(__dirname, '/MockConverterService'))
+const locationTrackingListener = require(path.join(__dirname, '/LocationTrackingAnalysis'))
+const etaReliabiltyListener = require(path.join(__dirname, './ExpectedArrivalTimeReliabiltyAnalysis'))
+
+const MockGTFSrtFeed = require(path.join(__dirname, '/MockGTFS-Realtime_Feed.Mongo'))
+const mongoConfig = require('./config/mongodb.config.js')
+const { buildQueries } = require('./utils/SimpleMongoQueryBuilder')
+
+const mockGTFSrtFeed = new MockGTFSrtFeed(mongoConfig)
+
+const queries = buildQueries({
+  startTimestamp: 1497500393,
+  endTimestamp: 1497501413
+})
+
+mockGTFSrtFeed.setQueryFilters(queries)
+
+mkdirp.sync(path.join(__dirname, '../logs'))
+mkdirp.sync(path.join(__dirname, '../analysis_out'))
+
+ConverterService.registerListener(locationTrackingListener)
+ConverterService.registerListener(etaReliabiltyListener)
+
+console.log('Starting analysis using the following MongoDB configuration:')
+console.log(JSON.stringify(mongoConfig, null, 4))
+console.log()
+
+ConverterService.start(mockGTFSrtFeed)
