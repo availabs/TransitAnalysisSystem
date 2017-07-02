@@ -24,78 +24,89 @@ const async = require('async')
 
 const ConverterStream  = require('MTA_Subway_GTFS-Realtime_to_SIRI_Converter').ConverterStream
 
-const GTFS_FeedHandlerService = require(path.join(__dirname, '../../../src/services/GTFS_FeedHandlerService'))
-
 const mockConfigService = require(path.join(__dirname, 'MockConfigsService'))
 
-const converterConfig  = mockConfigService.getConverterConfig()
 
-let gtfsFeedHandler
+class MockConverterServiceFactory {
 
-let converterStream
-
-
-GTFS_FeedHandlerService.start()
-
-//  _this.latestGTFSIndices
-gtfsFeedHandler = GTFS_FeedHandlerService.getFeedHandler()
-
-console.log(Object.keys(gtfsFeedHandler))
-process.exit(1)
-
-let latestConverter = null
-
-
-let listeners = []
-
-
-// Listeners should be functions with the following signature: f(err, gtfsrtJSON, siriJSON, converterCache)
-function registerListener (listener) {
-  if (!_.isFunction(listener))  {
-    throw new Error('Listeners must be functions.')
+  constructor () {
+    throw new Error('Use the static build method.')
   }
 
-  listeners.push(listener)
+  static async build (gtfsHandler, gtfsrtReader) {
+    await gtfsrtHandler.getTrainTrackerInitialState()
+    return new MockConverterService(gtfsHandler, gtfsrtReader, trainTrackerInitialState)
+  }
 }
 
+class MockConverterService {
 
-function start (mockGTFSrtFeed) {
+  constructor (gtfsHandler, gtfsrtReader, trainTrackerInitialState) {
 
-  mockGTFSrtFeed.open(function (err) {
+    this.gtfsHandler = gtfsHandler
+    this.gtfsrtReader = gtfsrtReader
 
-    if (err) {
-      console.error(err)
-      process.exit(1)
+    const converterConfig = mockConfigService.getConverterConfig()
+
+    this.converterStream = new ConverterStream(
+        gtfsFeedHandler,
+        mockGTFSrtFeed,
+        converterConfig,
+        trainTrackerInitialState,
+        converterUpdateListener.bind({ mockGTFSrtFeed })
+    )
+
+    this.listeners = []
+    this.latestConverter = null
+  }
+
+  // Listeners should be functions with the following signature:
+  //    f(err, gtfsrtJSON, siriJSON, converterCache)
+  registerListener (listener) {
+    if (!_.isFunction(listener))  {
+      throw new Error('Listeners must be functions.')
     }
 
-    mockGTFSrtFeed.getTrainTrackerInitialState((err2, trainTrackerInitialState) => {
-      if (err2) {
-        console.error(err2)
+    this.listeners.push(listener)
+  }
+
+  start () {
+
+    this.mockGTFSrtFeed.open(function (err) {
+
+      if (err) {
+        console.error(err)
         process.exit(1)
       }
 
-      converterStream = new ConverterStream(
-          gtfsFeedHandler,
-          mockGTFSrtFeed,
-          converterConfig,
-          trainTrackerInitialState,
-          converterUpdateListener.bind({ mockGTFSrtFeed })
-      )
+      mockGTFSrtFeed.getTrainTrackerInitialState((err2, trainTrackerInitialState) => {
+        if (err2) {
+          console.error(err2)
+          process.exit(1)
+        }
 
-      mockConfigService.removeTrainTrackerInitialStateFromConverterConfig()
+        converterStream = new ConverterStream(
+            gtfsFeedHandler,
+            mockGTFSrtFeed,
+            converterConfig,
+            trainTrackerInitialState,
+            converterUpdateListener.bind({ mockGTFSrtFeed })
+        )
 
-      mockConfigService.addConverterConfigUpdateListener(function (config) {
-        converterStream.updateConfig(config)
+        mockConfigService.removeTrainTrackerInitialStateFromConverterConfig()
+
+        mockConfigService.addConverterConfigUpdateListener(function (config) {
+          converterStream.updateConfig(config)
+        })
+
+        converterStream.start()
+
+        //start the feed messages.
+        if (mockGTFSrtFeed.sendNext() === null) {
+          console.log('These are no messages in the mock feed.')
+        }
       })
-
-      converterStream.start()
-
-      //start the feed messages.
-      if (mockGTFSrtFeed.sendNext() === null) {
-        console.log('These are no messages in the mock feed.')
-      }
     })
-  })
 }
 
 

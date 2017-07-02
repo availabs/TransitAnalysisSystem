@@ -14,7 +14,8 @@ function buildQueries (params) {
     startTimestamp,
     endTimestamp,
     tripIds,
-    routeIds
+    routeIds,
+    resultsLimit
   } = params
 
 
@@ -42,6 +43,7 @@ function buildQueries (params) {
     trainTrackerConditions.push({ _id: { $gte : endTimestamp } })
   }
 
+  // gtfsrt conditions are a superset of trainTracker conditions
   const gtfsrtConditions = trainTrackerConditions.slice()
 
   if (tripIds) {
@@ -77,7 +79,8 @@ function buildQueries (params) {
 
   return {
     trainTrackerQueryObject,
-    gtfsrtQueryObj
+    gtfsrtQueryObj,
+    resultsLimit: Number.isFinite(+resultsLimit) ? +resultsLimit : null
   }
 }
 

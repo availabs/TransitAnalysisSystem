@@ -9,14 +9,10 @@ const MongoClient = require('mongodb').MongoClient
 const confPath = path.join(__dirname, '/../../../config/server.json')
 let adminKey = JSON.parse(require('fs').readFileSync(confPath)).adminKey
 
-console.log(adminKey)
-
 const siriServerURL = 'http://localhost:16181/admin/get/server/state?key=' + adminKey
 //let siriServerURL = 'http://siri.mta.availabs.org/admin/get/server/state?key=NoSuchPlace'
 
-
 const dotPlaceholder = '\u0466'
-
 
 // Connect to the db
 MongoClient.connect("mongodb://localhost:27017/mta_gtfsrt", function (err, db) {
