@@ -3,7 +3,7 @@
 
 class EchoTimestampsFeedActor {
 
-  async getFeedMessage (gtfsrtJSON) {
+  async receiveMessage (gtfsrtJSON) {
     try {
       console.log(+gtfsrtJSON.header.timestamp.low)
     } catch (err) {
@@ -11,6 +11,12 @@ class EchoTimestampsFeedActor {
     }
 
     return
+  }
+
+  async teardown () {
+    return new Promise(resolve =>
+      process.nextTick(() => resolve())
+    )
   }
 }
 

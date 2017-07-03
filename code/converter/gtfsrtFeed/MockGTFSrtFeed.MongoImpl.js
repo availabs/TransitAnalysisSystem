@@ -18,116 +18,68 @@ class FeedHandler {
     this.mongoKeyHandler = new MongoKeyHandler(this.dotPlaceholder)
   }
 
-  setQueryFilters (queries) {
-    this.gtfsrtQueryObj = queries.gtfsrtQueryObj
-    this.trainTrackerQueryObject = queries.trainTrackerQueryObject
-    this.resultsLimit = +queries.resultsLimit
+  setQueryFilters (filters) {
+    this.gtfsrtQueryObj = filters.gtfsrtQueryObj
+    this.trainTrackerQueryObject = filters.trainTrackerQueryObject
+    this.resultsLimit = +filters.resultsLimit
 
     if (!Number.isFinite(this.resultsLimit)) {
       throw new Error('Invalid resultsLimit passed to setQueryFilters.')
     }
   }
 
-  open () {
-    return new Promise((resolve, reject) => {
-      if (this.db) {
-        return process.nextTick(resolve())
-      }
+  async open () {
+    this.db = await MongoClient.connect(this.mongoURL)
 
-      MongoClient.connect(this.mongoURL, (err, db) => {
-        if(err) {
-          return reject(err)
-        }
+    this.gtfsrtCollection = this.db.collection(this.gtfsrtCollectionName)
+    this.trainTrackerCollection = this.db.collection(this.trainTrackerCollectionName)
 
-        try {
-          this.db = db
-          this.gtfsrtCollection = db.collection(this.gtfsrtCollectionName)
-          this.trainTrackerCollection = db.collection(this.trainTrackerCollectionName)
+    this.gtfsrtCursor = this.gtfsrtCollection.find(this.gtfsrtQueryObj, { sort: { _id: 1 } })
 
-          this.gtfsrtCursor = this.gtfsrtCollection.find(this.gtfsrtQueryObj, { sort: { _id: 1 } })
-
-          if (Number.isFinite(this.resultsLimit)) {
-            this.gtfsrtCursor = this.gtfsrtCursor.limit(this.resultsLimit)
-          }
-
-          return resolve()
-
-        } catch (err2) {
-          return reject(err2)
-        }
-      })
-    })
+    if (Number.isFinite(this.resultsLimit)) {
+      this.gtfsrtCursor = this.gtfsrtCursor.limit(this.resultsLimit)
+    }
   }
 
-  getTrainTrackerInitialState () {
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        return reject(new Error('No MongoDB connection.'))
-      }
+  async getTrainTrackerInitialState () {
+    if (!this.db) {
+      throw new Error('No MongoDB connection.')
+    }
 
-      const sortRule = { sort: { _id: 1 } }
+    const sortRule = { sort: { _id: 1 } }
 
-      const _handler = (err, doc) => {
-        if (err) {
-          return reject(err)
-        }
+    const doc = await this.trainTrackerCollection.findOne(this.trainTrackerQueryObject, sortRule)
 
-        const restoredData = this.mongoKeyHandler.restoreKeys(doc)
-
-        return resolve(restoredData)
-      }
-
-      try {
-        this.trainTrackerCollection.findOne(this.trainTrackerQueryObject, sortRule, _handler)
-      } catch (err) {
-        return reject(err)
-      }
-
-    })
+    const restoredData = this.mongoKeyHandler.restoreKeys(doc)
+    return restoredData
   }
 
-  next () {
-    return new Promise((resolve, reject) => {
+  async next () {
+    if (!this.db) {
+      throw new Error('No MongoDB connection.')
+    }
 
-      if (!this.db) {
-        return reject(Error('No MongoDB connection.'))
-      }
+    // If item === null, all data has been sent.
+    const item = await this.gtfsrtCursor.nextObject()
 
-      this.gtfsrtCursor.nextObject((err1, item) => {
-        if (err1) {
-          return reject(err1)
-        }
-
-        if (item === null) {
-          return resolve(null)
-        }
-
-        const state = this.mongoKeyHandler.restoreKeys(item.state)
-
-        return resolve(state)
-      })
-    })
+    const state = item && this.mongoKeyHandler.restoreKeys(item.state)
+    return state
   }
 
   // https://mongodb.github.io/node-mongodb-native/2.2/api/Cursor.html#stream
   stream () {
     return new Promise((resolve) => {
-      return resolve(this.gtfsrtCursor.stream())
+      process.nextTick(() => resolve(this.gtfsrtCursor.stream()))
     })
   }
 
-  close () {
-    return new Promise((resolve, reject) => {
-      // https://mongodb.github.io/node-mongodb-native/2.2/api/Db.html#close
-      this.db.close(true, (err) => {
-        this.db = null
-        if (err) {
-          return reject(err)
-        }
+  async close () {
+    await this.db.close(true)
 
-        resolve()
-      })
-    })
+    this.gtfsrtCollection = null
+    this.trainTrackerCollection = null
+    this.gtfsrtCursor = null
+    this.db = null
   }
 }
 

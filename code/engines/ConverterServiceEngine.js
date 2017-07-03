@@ -1,32 +1,17 @@
 'use strict'
 
-// Because the actors may have cleanup code,
-//    if we want to ensure an error message
-//    we need the following event handler...
-process.on('uncaughtException', (err) => {
-  console.error(err)
-})
 
 const MockConverterServiceFactory = require('../converter/ConverterServiceFactory')
-const _ = require('lodash')
 
-
-class UniversalEngine {
+class ConverterServiceEngine {
 
   constructor (config) {
-
-    console.log(JSON.stringify(config, null, 4))
-
     this.actors = []
     this.config = config
   }
 
   registerActor (actor) {
     this.actors.push(actor)
-  }
-
-  removeActor (actor) {
-    _.pull(this.actors, actor)
   }
 
   async run () {
@@ -38,7 +23,7 @@ class UniversalEngine {
       ).then(
         () => converterService.open()
       ).then(
-        () => runReports.call(this, converterService)
+        () => activateActors.call(this, converterService)
       ).catch(
         err => console.error(err)
       )
@@ -46,9 +31,11 @@ class UniversalEngine {
 }
 
 
-async function runReports (converterService) {
+async function activateActors (converterService) {
 
-  while (true) {
+  let actorErr = null
+
+  while (true && !actorErr) {
     const data = await converterService.next()
 
     if (data === null) {
@@ -59,18 +46,35 @@ async function runReports (converterService) {
       gtfsrtJSON,
       siriObj,
       converterUpdate
-    } = data
+    } = data || {}
+
+    if (!gtfsrtJSON) {
+      continue
+    }
 
     await Promise.all(
       this.actors.map(
-        actor => actor(gtfsrtJSON, siriObj, converterUpdate)
+        actor => actor.receiveMessage(gtfsrtJSON, siriObj, converterUpdate)
       )
-    )
+    ).catch((err) => {
+      console.log(err)
+      actorErr = err
+    })
   }
 
-  return converterService.close()
+  await converterService.close()
+
+  await Promise.all(
+    this.actors.map(actor =>
+      actor.teardown()
+    )
+  )
+
+  if (actorErr) {
+    throw actorErr
+  }
 }
 
 
-module.exports = UniversalEngine
+module.exports = ConverterServiceEngine
 

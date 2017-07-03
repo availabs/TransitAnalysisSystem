@@ -52,19 +52,26 @@ class MockConverterService {
 
   async next () {
     // Get the next GTFS-Realtime Message.
-    const GTFSrt_JSON = await this.gtfsrtFeed.next()
 
-    if (GTFSrt_JSON === null) {
-      return null
+    // FIXME: Is try/catch guaranteed to work for all cases ???
+    try {
+      const GTFSrt_JSON = await this.gtfsrtFeed.next()
+
+      if (GTFSrt_JSON === null) {
+        return null
+      }
+
+      const next = this.nextConverterUpdate()
+
+      // Send the message to the converterStream
+      this.gtfsrtPump.send(GTFSrt_JSON)
+
+      this.nextConverterUpdate = this.newNextUpdate()
+      return next
+    } catch (err) {
+      console.log(err)
+      return
     }
-
-    const next = this.nextConverterUpdate()
-
-    // Send the message to the converterStream
-    this.gtfsrtPump.send(GTFSrt_JSON)
-
-    this.nextConverterUpdate = this.newNextUpdate()
-    return next
   }
 
   async close () {
