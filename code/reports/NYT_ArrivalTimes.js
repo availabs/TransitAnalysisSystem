@@ -65,18 +65,46 @@ async function feedListener (gtfsrtJSON, siriJSON, converterUpdate) {
     }
   }
 
-  let newChain = {}
   const vehicleActivity = _.get(siriJSON, pathToVehicleActivity, [])
 
   vehicleActivity.forEach((vehAct) => {
     let vehicleRef = vehAct.MonitoredVehicleJourney.VehicleRef
 
-    let recordedAtTime = vehAct.RecordedAtTime // GTFSrt.getVehiclePositionTimestamp(trip_id)
+    // Siri => GTFSrt
+		/**
+		 *  "The GTFS trip ID for trip the vehicle is serving, prefixed by the GTFS agency ID."
+		 */
+		// function getDatedVehicleJourneyRef (gtfsTripKey, agency_id) {
+				// [> jshint validthis: true <]
+				// var fullTripID = this.GTFS.getFullTripIDForTrip(gtfsTripKey),
+						// dvjr = null;
 
-    // test that this is the case... use an assertion
-    if (recordedAtTime === recordedAtTimes[vehicleRef]) {
-      return
-    }
+				// if (fullTripID !== null) {
+						// dvjr = ((agency_id) ? (agency_id + '_') : '') + fullTripID;
+				// } else {
+						// dvjr = this.config.unscheduledTripIndicator + ((agency_id) ? (agency_id + '_') : '') + gtfsTripKey;
+				// }
+
+				// this.datedVehicleJourneyRef_to_gtfsTripKeyTable[dvjr] = gtfsTripKey;
+
+				// return dvjr;
+		// }
+
+// caching/ConverterCache.js
+// 53:        this.datedVehicleJourneyRef_to_gtfsTripKeyTable = converter.datedVehicleJourneyRef_to_gtfsTripKeyTable;
+
+
+      // projection = vehicleActivity.reduce(function (acc, monitoredJourney) {
+        // let journeyRef = monitoredJourney.MonitoredVehicleJourney
+                         // .FramedVehicleJourneyRef
+                         // .DatedVehicleJourneyRef,
+          // lon    = monitoredJourney.MonitoredVehicleJourney.VehicleLocation.Longitude,
+          // lat    = monitoredJourney.MonitoredVehicleJourney.VehicleLocation.Latitude,
+          // route_id   = monitoredJourney.MonitoredVehicleJourney.LineRef
+
+    let tripKey = null
+
+    let recordedAtTime = vehAct.RecordedAtTime // GTFSrt.getVehiclePositionTimestamp(trip_id)
 
     const {
       DistanceFromCall: distanceFromCall,
@@ -87,15 +115,18 @@ async function feedListener (gtfsrtJSON, siriJSON, converterUpdate) {
 
     let previousPair = chain[vehicleRef]
 
-    let nextStop = vehAct.MonitoredVehicleJourney.MonitoredCall.StopPointRef
+    let nextStop = _.get(vehAct, 'MonitoredVehicleJourney.MonitoredCall.StopPointRef', null)
 
-    let nextETA =
-        new Date(vehAct.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime).getTime()
+
+    let nextETA = new Date(
+        _.get(vehAct, 'MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime', null)
+    ).getTime()
 
     if (previousPair && (previousPair.stop === nextStop)) {
       if (!previousPair.isAtStop && isAtStop) {
         const actualArrivalTime = recordedAtTime
-        // getScheduledArrivalTimeForStopForTrip : function (tripKey, stop_id, stop_sequence)
+        // GTFS_Tookit.Wrapper.getScheduledArrivalTimeForStopForTrip:
+        //    function (tripKey, stop_id, stop_sequence)
         const scheduledArrivalTime = gtfsWrapper.getScheduledArrivalTime()
       }
     } else {

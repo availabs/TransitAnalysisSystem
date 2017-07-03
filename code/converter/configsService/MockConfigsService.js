@@ -1,22 +1,22 @@
 'use strict'
 
 
-let path = require('path')
+const path = require('path')
 
-let ConfigsService = require(path.join(__dirname, '../../../src/services/ConfigsService'))
-
-
-let configGetterPattern = /^get.*Config$/ ,
-  addListenerPattern  = /^add.*Listener$/ ,
-  removeListenerPattern = /^remove.*Listener/ ,
-
-  logFilePathPattern = /^.*LogPath$/
+const ConfigsService = require(path.join(__dirname, '../../../../../src/services/ConfigsService'))
 
 
-let listeners    = []
-let interceptors = []
+const configGetterPattern = /^get.*Config$/
+const addListenerPattern  = /^add.*Listener$/
+const removeListenerPattern = /^remove.*Listener/
 
-let mockLogsDir = path.join(__dirname, '../logs/')
+const logFilePathPattern = /^.*LogPath$/
+
+
+const listeners    = []
+const interceptors = []
+
+const mockLogsDir = path.join(__dirname, '../../../logs/')
 
 
 function redirectLogs (config) {

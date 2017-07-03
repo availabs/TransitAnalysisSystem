@@ -9,72 +9,23 @@
 
 'use strict'
 
-
 /**********************************************************
  * MOCK Converter Service
  *********************************************************/
 
-require(__dirname + '/MockEventHandlingService')
-
-
 const path = require('path')
 
-const ConverterStream  = require('MTA_Subway_GTFS-Realtime_to_SIRI_Converter').ConverterStream
+require(path.join(__dirname, '../eventHandling/MockEventHandlingService'))
 
-const MockGTFSFeedHandlerFactory = require('./MockGTFSFeedHandlerFactory')
-const MockGTFSrtFeedFactory = require('./MockGTFSrtFeedFactory')
+const ConverterStream  = require('MTA_Subway_GTFS-Realtime_to_SIRI_Converter').ConverterStream
 
 const siriRequestParams = {
   vehiclemonitoringdetaillevel: 'calls'
 }
 
-const mockConfigService = require(path.join(__dirname, 'MockConfigsService'))
-
-const converterConfig  = mockConfigService.getConverterConfig()
-
-// TODO: Make sure a reference to the trainTrackerInitialState is not kept in the configs service
-
-class MockConverterServiceFactory {
-
-  constructor () {
-    throw new Error('Use the static build function.')
-  }
-
-  static async build (config) {
-    const [
-      gtfsFeedHandler,
-      gtfsrtFeed
-    ] = await Promise.all([
-      MockGTFSFeedHandlerFactory.build(),
-      MockGTFSrtFeedFactory.build(config.gtfsrt)
-    ])
-
-    console.log(Object.keys(gtfsFeedHandler))
-    console.log(Object.keys(gtfsrtFeed))
-
-    await gtfsrtFeed.open()
-
-    const trainTrackerInitialState = await gtfsrtFeed.getTrainTrackerInitialState()
-
-    const mockConverterService = new MockConverterService(
-        gtfsFeedHandler,
-        gtfsrtFeed,
-        trainTrackerInitialState
-    )
-
-    mockConfigService.addConverterConfigUpdateListener(function (_config) {
-      mockConverterService.converterStream.updateConfig(_config)
-    })
-
-    console.log(Object.keys(mockConverterService))
-    return mockConverterService
-  }
-}
-
-
 class MockConverterService {
 
-  constructor (gtfsFeedHandler, gtfsrtFeed, trainTrackerInitialState) {
+  constructor (gtfsFeedHandler, gtfsrtFeed, trainTrackerInitialState, converterConfig) {
 
     this.gtfsFeedHandler = gtfsFeedHandler
 
@@ -178,5 +129,5 @@ class GTFSrtPump {
 }
 
 
-module.exports = MockConverterServiceFactory
+module.exports = MockConverterService
 

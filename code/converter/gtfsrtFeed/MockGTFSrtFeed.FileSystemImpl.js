@@ -9,7 +9,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const protofilePath = path.join(__dirname, '../../../proto_files/nyct-subway.proto')
+const protofilePath = path.join(__dirname, '../../../../../proto_files/nyct-subway.proto')
 
 const ProtoBuf = require('protobufjs')
 

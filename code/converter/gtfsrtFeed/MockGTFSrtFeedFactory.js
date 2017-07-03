@@ -1,7 +1,9 @@
 'use strict'
 
-const MongoMockGTFSrtFeed = require('./MockGTFSrtFeed.Mongo')
-const FileSystemMockGTFSrtFeed = require('./MockGTFSrtFeed.FileSystem')
+const MongoMockGTFSrtFeed = require('./MockGTFSrtFeed.MongoImpl')
+const FileSystemMockGTFSrtFeed = require('./MockGTFSrtFeed.FileSystemImpl')
+const { buildQueries } = require('../../utils/SimpleMongoQueryBuilder')
+
 
 class MockGTFSrtFeedFactory {
   constructor () {
@@ -13,15 +15,16 @@ class MockGTFSrtFeedFactory {
 
     if (config.mongoConfig) {
       feed = new MongoMockGTFSrtFeed(config.mongoConfig)
-    } else if (config.gtfsrt.fileSystemConfig) {
+    } else if (config.fileSystemConfig) {
       feed = new FileSystemMockGTFSrtFeed(config.fileSystemConfig)
     } else {
       throw new Error('Invalid configuration.')
     }
 
+    if (config.filterConditions) {
+      const queryFilters = buildQueries(config.filterConditions)
 
-    if (config.queryFilters) {
-      feed.setQueryFilters(config.queryFilters)
+      feed.setQueryFilters(queryFilters)
     }
 
     return feed

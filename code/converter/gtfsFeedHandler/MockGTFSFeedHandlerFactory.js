@@ -8,7 +8,7 @@ const _ = require('lodash')
 const JSONStream = require('JSONStream')
 const es = require('event-stream')
 
-const mockConfigService = require(path.join(__dirname, 'MockConfigsService'))
+const mockConfigService = require(path.join(__dirname, '../configsService/MockConfigsService'))
 
 const {
   indexedScheduleDataFilePath: scheduleDataFilePath,

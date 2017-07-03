@@ -2,9 +2,7 @@
 
 
 const MongoClient = require('mongodb').MongoClient
-const MongoKeyHandler = require('./utils/MongoKeyHandler')
-
-// const GTFSrtFeedHandlerInterface = require('./MockGTFSrtFeed.Interface')
+const MongoKeyHandler = require('../../utils/MongoKeyHandler')
 
 const configParams = [
   'mongoURL',
@@ -31,7 +29,6 @@ class FeedHandler {
   }
 
   open () {
-    console.log('OPEN')
     return new Promise((resolve, reject) => {
       if (this.db) {
         return process.nextTick(resolve())
@@ -63,7 +60,6 @@ class FeedHandler {
   }
 
   getTrainTrackerInitialState () {
-    console.log('Train Tracker State')
     return new Promise((resolve, reject) => {
       if (!this.db) {
         return reject(new Error('No MongoDB connection.'))
@@ -91,7 +87,6 @@ class FeedHandler {
   }
 
   next () {
-    console.log('NEXT')
     return new Promise((resolve, reject) => {
 
       if (!this.db) {
