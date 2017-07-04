@@ -22,7 +22,7 @@ class MessageUploader {
       return
     }
 
-    const timestamp = parseInt(gtfsrtJSON.header.timestamp)
+    const timestamp = parseInt(gtfsrtJSON.header.timestamp.low)
 
     // CONSIDER: Should we require sorted order of messages ???
     if (timestamp <= this.lastTimestamp) {

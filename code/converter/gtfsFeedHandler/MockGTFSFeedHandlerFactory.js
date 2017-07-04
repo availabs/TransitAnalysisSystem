@@ -15,7 +15,6 @@ const {
   indexedSpatialDataFilePath: spatialDataFilePath,
 } = mockConfigService.getGTFSConfig()
 
-
 class GTFS_FeedHandlerFactory {
 
   constructor () {
@@ -60,7 +59,7 @@ function readFile (filePath) {
     console.log('Loading', filePath)
     fs.createReadStream(filePath)
       .pipe(
-        JSONStream.parse([true, { recurse: true }, true, { emitPath: true }])
+        JSONStream.parse([true, { emitPath: true }])
       ).pipe(es.mapSync((data) => {
         _.set(idx, data.path, data.value)
       })).on('end', () => {

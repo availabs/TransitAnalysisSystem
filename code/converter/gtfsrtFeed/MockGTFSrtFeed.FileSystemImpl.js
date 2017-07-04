@@ -34,7 +34,8 @@ class FeedHandler {
 
   // Simply checks to make sure the data directory exists, and gets a list of the files.
   async open () {
-    this.dataFilesList = await readdir(this.dataDirectory)
+    const dataFilesList = await readdir(this.dataDirectory)
+    this.dataFilesList = dataFilesList.sort().reverse()
   }
 
   getTrainTrackerInitialState () {
