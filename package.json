@@ -1,5 +1,5 @@
 {
-  "name": "avail_mta_gtfsrt_analysis",
+  "name": "transit_analysis_tool",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
