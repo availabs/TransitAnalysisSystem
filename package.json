@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "fast-csv": "^2.4.0",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
     "mongo": "^0.1.0"
