@@ -1,4 +1,5 @@
-/* eslint dot-notation: "off", no-lonely-if: "off" */
+// Simple example Actor
+
 'use strict'
 
 class EchoTimestampsFeedActor {
