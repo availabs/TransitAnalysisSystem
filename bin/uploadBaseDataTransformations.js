@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const ConverterServiceEngine = require('../code/engines/ConverterServiceEngine')
+const ConverterServiceEngine = require('../src/engines/ConverterServiceEngine')
 
-const nytMongoConfig = require('../code/config/nyt.mongo')
+const nytMongoConfig = require('../src/config/nyt.mongo')
 
-const BaseDataUploader = require('../code/actors/converterService/BaseDataUploader')
-const baseDataMongoConfig = require('../code/config/baseData.mongo')
+const BaseDataUploader = require('../src/actors/converterService/BaseDataUploader')
+const baseDataMongoConfig = require('../src/config/baseData.mongo')
 
 const converterConfig = {
   gtfsrt: {

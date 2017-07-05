@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-const ConverterServiceEngine = require('../code/engines/ConverterServiceEngine')
-const MessageUploader = require('../code/actors/converterService/MessageUploader')
+const ConverterServiceEngine = require('../src/engines/ConverterServiceEngine')
+const MessageUploader = require('../src/actors/converterService/MessageUploader')
 
-const nytFilesConfig = require('../code/config/nyt.files')
-const nytMongoConfig = require('../code/config/nyt.mongo')
+const nytFilesConfig = require('../src/config/nyt.files')
+const nytMongoConfig = require('../src/config/nyt.mongo')
 // const mongoConfig = Object.assign({}, nytMongoConfig, { mongoURL: `${nytMongoConfig.mongoURL}_TEST` })
 const converterConfig = {
   gtfsrt: {

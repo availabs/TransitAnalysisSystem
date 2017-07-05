@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const MockConfigsService = require('../code/converter/configsService/MockConfigsService')
+const MockConfigsService = require('../src/converter/configsService/MockConfigsService')
 
-const ConverterServiceEngine = require('../code/engines/ConverterServiceEngine')
-const MessageUploader = require('../code/actors/converterService/MessageUploader')
+const ConverterServiceEngine = require('../src/engines/ConverterServiceEngine')
+const MessageUploader = require('../src/actors/converterService/MessageUploader')
 
-const nytMongoConfig = require('../code/config/nyt.mongo')
+const nytMongoConfig = require('../src/config/nyt.mongo')
 const mongoConfig = Object.assign(
   {},
   nytMongoConfig,

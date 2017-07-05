@@ -13,7 +13,7 @@ const MongoClient = require('mongodb').MongoClient
 const mongoURL = 'mongodb://localhost:27017/mta_subway_base_data'
 const baseDataCollectionName = 'base_data'
 const dotPlaceholder = '\u0466'
-const MongoKeyHandler = require('../code/utils/MongoKeyHandler')
+const MongoKeyHandler = require('../src/utils/MongoKeyHandler')
 const mongoKeyHandler = new MongoKeyHandler(dotPlaceholder)
 
 
