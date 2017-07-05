@@ -8,5 +8,6 @@ echo "Using the configuration file found here:"
 echo "    ${DIR}/../node_modules/MTA_Subway_SIRI_Server/config/"
 echo
 
-node "${DIR}/../node_modules/.bin/updateGTFSData" \
+node --max-old-space-size=7000 \
+    "${DIR}/../node_modules/.bin/updateGTFSData" \
     "${DIR}/../node_modules/MTA_Subway_SIRI_Server/src/services/ConfigsService.js"

@@ -10,7 +10,7 @@ const mongoConfig = Object.assign(
   {},
   nytMongoConfig,
   {
-    mongoURL: 'mongodb://localhost:27017/mta_staten_island_LiveTest'
+    mongoURL: 'mongodb://localhost:27017/mta_subway_scrape'
   }
 )
 
