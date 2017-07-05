@@ -13,7 +13,7 @@ const path = require('path')
 const readdir = util.promisify(fs.readdir)
 const readFile = util.promisify(fs.readFile)
 
-const protofilePath = path.join(__dirname, '../../../../../proto_files/nyct-subway.proto')
+const protofilePath = path.join(__dirname, '../../../node_modules/MTA_Subway_SIRI_Server/proto_files/nyct-subway.proto')
 
 const ProtoBuf = require('protobufjs')
 

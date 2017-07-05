@@ -2,7 +2,7 @@
 
 'use strict'
 
-const pathToConverterModule = '../../../../../node_modules/MTA_Subway_GTFS-Realtime_to_SIRI_Converter'
+const pathToConverterModule = '../../../node_modules/MTA_Subway_GTFS-Realtime_to_SIRI_Converter'
 
 const GTFSrtFeedReader = require(pathToConverterModule).MTA_Subway_GTFS_Realtime_Toolkit.FeedReader
 

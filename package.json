@@ -10,8 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "MTA_Subway_SIRI_Server": "git+https://github.com/availabs/MTA_Subway_SIRI_Server.git",
     "fast-csv": "^2.4.0",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",

@@ -3,7 +3,7 @@
 
 const path = require('path')
 
-const ConfigsService = require(path.join(__dirname, '../../../../../src/services/ConfigsService'))
+const ConfigsService = require(path.join(__dirname, '../../../node_modules/MTA_Subway_SIRI_Server/src/services/ConfigsService'))
 
 
 const configGetterPattern = /^get.*Config$/
