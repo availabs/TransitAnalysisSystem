@@ -10,25 +10,25 @@ const _ = require('lodash')
 
 const MongoClient = require('mongodb').MongoClient
 
-const mongoURL = 'mongodb://localhost:27017/mta_subway_base_data'
-const baseDataCollectionName = 'base_data'
-const dotPlaceholder = '\u0466'
-const MongoKeyHandler = require('../src/utils/MongoKeyHandler')
-const mongoKeyHandler = new MongoKeyHandler(dotPlaceholder)
+const MongoUserConfigFactory = require('../config/mongo/MongoUserConfigFactory')
+const mongoConfig = MongoUserConfigFactory.build({ feedName: 'mta_subway', userLevel: 'READ_ONLY' })
 
+const MongoKeyHandler = require('../utils/MongoKeyHandler')
+const mongoKeyHandler = new MongoKeyHandler(mongoConfig.dotPlaceholder)
 
-const outputFilePath = path.join(__dirname, '../nyt/data/basicTripInfo.20170705.csv')
-// const outputFilePath = path.join(__dirname, '../nyt/data/locations.20170615.csv')
+// const outputFilePath = path.join(__dirname, '../nyt/data/basicTripInfo.20170615.csv')
+// const outputFilePath = path.join(__dirname, '/tmp/mta_subway.20170615.csv')
 
-const startTime = '2017-07-05 00:00:00'
-const endTime = '2017-07-05 24:00:00'
+// const startTime = '2017-06-15 18:00:00'
+// const endTime = '2017-06-15 19:00:00'
 
-const mongoQuery = {
-  _id: {
-    $gte: moment(startTime).unix(),
-    $lt: moment(endTime).unix(),
-  },
-}
+const mongoQuery = {}
+// const mongoQuery = {
+  // _id: {
+    // $gte: moment(startTime).unix(),
+    // $lt: moment(endTime).unix(),
+  // },
+// }
 
 
 // Could not get the Mongo project to work with a wildcard.
@@ -65,17 +65,17 @@ const projectedFields = [
 
 // locations
 // const projectedFields = [
-//   "gtfsrtKey",
-//   "gtfsrtMsgTimestamp",
-//   "positionTimestamp",
-//   "latitude",
-//   "longitude",
-//   "routeId",
+  // "gtfsrtKey",
+  // "gtfsrtMsgTimestamp",
+  // "positionTimestamp",
+  // "latitude",
+  // "longitude",
+  // "routeId",
 // ]
 
 
 // Set selected routes to null for no filtering.
-const selectedRoutes = [ 4, 5, 6 ]
+// const selectedRoutes = [ 4, 5, 6 ]
 
 const mongoOptions = {
   sort: '_id'
@@ -84,12 +84,11 @@ const mongoOptions = {
 
 let db
 
-MongoClient.connect(mongoURL)
+MongoClient.connect(mongoConfig.mongoURL)
   .then(
     (_db) => (db = _db)
   ).then(
-    () => db.collection(baseDataCollectionName).find(mongoQuery, {}, mongoOptions)
-            // .limit(1) // for testing
+    () => db.collection(mongoConfig.derivedDataCollectionName).find(mongoQuery, {}, mongoOptions) // for testing
   )
   .then(
     (cursor) => cursor.stream()
@@ -118,15 +117,13 @@ function handleDataStream (dataStream) {
           Object.keys(data).sort()
             .forEach((tripId) => {
               // Set selected routes to null for no filtering.
-              if (!selectedRoutes || selectedRoutes.includes(data[tripId].routeId)) {
-                const fields = _.intersection(Object.keys(data[tripId]), projectedFields)
-                const tripData = fields.reduce((acc, field) => {
-                  acc[snakeCase(field)] = data[tripId][field]
-                  return acc
-                }, {})
+              const fields = _.intersection(Object.keys(data[tripId]), projectedFields)
+              const tripData = fields.reduce((acc, field) => {
+                acc[snakeCase(field)] = data[tripId][field]
+                return acc
+              }, {})
 
-                this.push(tripData)
-              }
+              this.push(tripData)
             })
 
           callback(null)
@@ -141,12 +138,20 @@ function handleDataStream (dataStream) {
         strictColumnHandling: true,
       })
     ).pipe(
-      // process.stdout // for debugging
-      fs.createWriteStream(outputFilePath)
+      process.stdout // for debugging
+      // fs.createWriteStream(outputFilePath)
     ).on('error',
-      reject
+      () => reject()
     ).on('finish',
-      resolve
+      () => {
+        console.log('finish')
+        resolve()
+      }
+    ).on('end',
+      () => {
+        console.log('end')
+        resolve()
+      }
     )
   })
 }

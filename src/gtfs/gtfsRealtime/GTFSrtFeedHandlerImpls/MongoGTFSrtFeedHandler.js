@@ -28,7 +28,10 @@ class MongoGTFSrtFeedHandler extends GTFSrtFeedHandlerInterface {
 
     that.mongoKeyHandler = new MongoKeyHandler(config.dotPlaceholder)
 
-    this.setQueryFilters = _setQueryFilters.bind(that)
+    if (config.filterConditions) {
+      _setQueryFilters.call(that, config.filterConditions)
+    }
+
     this.open = _open.bind(that)
     this.getTrainTrackerInitialState = _getTrainTrackerInitialState.bind(that)
     this.next = _next.bind(that)

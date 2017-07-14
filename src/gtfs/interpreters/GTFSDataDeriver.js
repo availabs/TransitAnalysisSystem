@@ -43,6 +43,7 @@ function _registerListener (listener) {
 }
 
 async function _receiveMessage (converterUpdate) {
+
   const {
     GTFS,
     GTFSrt,
@@ -92,12 +93,14 @@ async function _receiveMessage (converterUpdate) {
     const atStop = (eta <= positionTimestamp)
     const ata = (atStop) ? positionTimestamp : null
     const routeId = GTFS.getRouteIDForTrip(gtfsKey)
+      || (vehAct.MonitoredVehicleJourney && vehAct.MonitoredVehicleJourney.PublishedLineName)
+      || GTFSrt.getRouteIDForTrip(gtfsrtKey)
 
     let latitude = converter.trainTrackerSnapshot.getLatitude(gtfsKey)
     let longitude = converter.trainTrackerSnapshot.getLongitude(gtfsKey)
 
     if (atStop && !(latitude && longitude)) {
-      [longitude = null, latitude = null] = _.get(this.stopCoords, [routeId], [])
+      [longitude = null, latitude = null] = _.get(this.stopCoords, [stopId], [])
     }
 
     let sta = GTFS.getScheduledArrivalTimeForStopForTrip(gtfsKey, stopId)
@@ -149,7 +152,6 @@ async function _receiveMessage (converterUpdate) {
     return acc
   }, {})
 
-  console.log(JSON.stringify(derivedData, null, 4).slice(0,360))
 
   await Promise.all(
     this.listeners.map(

@@ -40,7 +40,7 @@ function buildCachedGTFSrtQueryConditions (queryConditions) {
   }
 
   if (endTimestamp) {
-    trainTrackerConditions.push({ _id: { $gte : endTimestamp } })
+    trainTrackerConditions.push({ _id: { $lt : endTimestamp } })
   }
 
   // gtfsrt conditions are a superset of trainTracker conditions
@@ -58,28 +58,28 @@ function buildCachedGTFSrtQueryConditions (queryConditions) {
     })
   }
 
-  let trainTrackerQuery
-  let gtfsrtQuery
+  let trainTrackerQueryObj
+  let gtfsrtQueryObj
 
   if (trainTrackerConditions.length > 1) {
     // More than one condition, link with AND
-    trainTrackerQuery = { $and: trainTrackerConditions }
+    trainTrackerQueryObj = { $and: trainTrackerConditions }
   } else {
     // Either a single condition or none.
-    trainTrackerQuery = trainTrackerConditions[0] || null
+    trainTrackerQueryObj = trainTrackerConditions[0] || null
   }
 
   if (gtfsrtConditions.length > 1) {
     // More than one condition, link with AND
-    gtfsrtQuery = { $and: gtfsrtConditions }
+    gtfsrtQueryObj = { $and: gtfsrtConditions }
   } else {
     // Either a single condition or none.
-    gtfsrtQuery = gtfsrtConditions[0] || null
+    gtfsrtQueryObj = gtfsrtConditions[0] || null
   }
 
   return {
-    trainTrackerQuery,
-    gtfsrtQuery,
+    trainTrackerQueryObj,
+    gtfsrtQueryObj,
     resultsLimit: Number.isFinite(+resultsLimit) ? +resultsLimit : null
   }
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const moment = require('moment')
 
 const GTFSConfigFactory = require('../config/gtfs/GTFSConfig/GTFSConfigFactory')
 const MongoUserConfigFactory = require('../config/mongo/MongoUserConfigFactory')
@@ -36,14 +37,23 @@ if (!(feedName && gtfsrtSource)) {
   process.exit(1)
 }
 
+// const startTime = '2017-06-15 12:00:00'
+// const endTime = '2017-06-15 14:00:00'
+
 
 const gtfsOptions = {
   feedName,
   gtfs: {
     source: 'FILE',
+    // indexedScheduleDataFilePath: require('path').join(__dirname, '../../data/gtfs/_test_/indexedScheduleData.json')
   },
   gtfsrt: {
-    source: gtfsrtSource
+    source: gtfsrtSource,
+    // filterConditions: {
+      // startTimestamp: moment(startTime).unix(),
+      // endTimestamp: moment(endTime).unix(),
+      // // routeIds: [4],
+    // }
   }
 }
 
@@ -85,9 +95,9 @@ Promise.all([
   .then(
     async () => Promise.all([
       derivedDataUploader.teardown(),
-      gtfsDataDeriver.tearDown(),
+      gtfsDataDeriver.teardown(),
       gtfsMessageDispatcher.teardown(),
-      gtfsConverterService.teardown(),
+      gtfsConverterService.close(),
     ])
   )
   .then(() => console.log('done'))
