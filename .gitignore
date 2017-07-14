@@ -1,4 +1,5 @@
 data/*
 logs/*
+tmp/*
 node_modules/*
 SIRI_Cache_Server/

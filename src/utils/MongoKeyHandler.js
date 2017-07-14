@@ -15,24 +15,22 @@ class MongoKeyHandler {
     if (!dotPlaceholder) {
       throw new Error('dotPlaceholder is required.')
     }
-    this.dotPlaceholder = dotPlaceholder
-  }
 
-  cleanKeys (obj) {
-    return _cleanKeys(obj, this.dotPlaceholder)
-  }
+    const that = {
+      dotPlaceholder
+    }
 
-  restoreKeys (obj) {
-    return _restoreKeys(obj, this.dotPlaceholder)
+    this.cleanKeys = _cleanKeys.bind(that)
+    this.restoreKeys = _restoreKeys.bind(that)
   }
 }
 
-function _cleanKeys (obj, dotPlaceholder) {
+function _cleanKeys (obj) {
   let keys = ((obj !== null) && (typeof obj === 'object')) ? Object.keys(obj) : null
 
   if (keys) {
-    return keys.reduce(function (acc, key) {
-      acc[key.replace(/\./g, dotPlaceholder)] = _cleanKeys(obj[key], dotPlaceholder)
+    return keys.reduce((acc, key) => {
+      acc[key.replace(/\./g, this.dotPlaceholder)] = _cleanKeys.call(this, obj[key])
       return acc
     }, Array.isArray(obj) ? [] : {})
   } else {
@@ -40,14 +38,14 @@ function _cleanKeys (obj, dotPlaceholder) {
   }
 }
 
-function _restoreKeys (obj, dotPlaceholder) {
-  const dotPlaceholderRegExp = new RegExp(dotPlaceholder)
+function _restoreKeys (obj) {
+  const dotPlaceholderRegExp = new RegExp(this.dotPlaceholder)
   const keys = ((obj !== null) && (typeof obj === 'object')) ? Object.keys(obj) : null
 
   if (keys) {
-    return keys.reduce(function (acc, key) {
+    return keys.reduce((acc, key) => {
       let restoredKey = (dotPlaceholderRegExp.test(key)) ? key.replace(dotPlaceholderRegExp, '.') : key
-      acc[restoredKey] = _restoreKeys(obj[key], dotPlaceholder)
+      acc[restoredKey] = _restoreKeys.call(this, obj[key])
       return acc
     }, Array.isArray(obj) ? [] : {})
   } else {

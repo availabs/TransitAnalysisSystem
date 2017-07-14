@@ -8,7 +8,7 @@ const tripIdPaths = [
 const routeIdPath = 'state.entity.trip_update.trip.route_id'
 
 
-function buildQueries (params) {
+function buildCachedGTFSrtQueryConditions (queryConditions) {
 
   let {
     startTimestamp,
@@ -16,7 +16,7 @@ function buildQueries (params) {
     tripIds,
     routeIds,
     resultsLimit
-  } = params
+  } = queryConditions
 
 
   if ((startTimestamp && isNaN(startTimestamp)) ||
@@ -58,33 +58,33 @@ function buildQueries (params) {
     })
   }
 
-  let trainTrackerQueryObject
-  let gtfsrtQueryObj
+  let trainTrackerQuery
+  let gtfsrtQuery
 
   if (trainTrackerConditions.length > 1) {
     // More than one condition, link with AND
-    trainTrackerQueryObject = { $and: trainTrackerConditions }
+    trainTrackerQuery = { $and: trainTrackerConditions }
   } else {
     // Either a single condition or none.
-    trainTrackerQueryObject = trainTrackerConditions[0] || null
+    trainTrackerQuery = trainTrackerConditions[0] || null
   }
 
   if (gtfsrtConditions.length > 1) {
     // More than one condition, link with AND
-    gtfsrtQueryObj = { $and: gtfsrtConditions }
+    gtfsrtQuery = { $and: gtfsrtConditions }
   } else {
     // Either a single condition or none.
-    gtfsrtQueryObj = gtfsrtConditions[0] || null
+    gtfsrtQuery = gtfsrtConditions[0] || null
   }
 
   return {
-    trainTrackerQueryObject,
-    gtfsrtQueryObj,
+    trainTrackerQuery,
+    gtfsrtQuery,
     resultsLimit: Number.isFinite(+resultsLimit) ? +resultsLimit : null
   }
 }
 
 
 module.exports = {
-  buildQueries
+  buildCachedGTFSrtQueryConditions
 }

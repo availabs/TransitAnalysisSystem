@@ -1,36 +1,35 @@
 {
   // http://eslint.org/docs/rules/
-  "ecmaFeatures": {
-    "binaryLiterals": false,                    // enable binary literals
-    "blockBindings": true,                     // enable let and const (aka block bindings)
-    "defaultParams": true,                     // enable default function parameters
-    "forOf": false,                             // enable for-of loops
-    "generators": false,                        // enable generators
-    "objectLiteralComputedProperties": false,   // enable computed object literal property names
-    "objectLiteralDuplicateProperties": false,  // enable duplicate object literal properties in strict mode
-    "objectLiteralShorthandMethods": false,     // enable object literal shorthand methods
-    "objectLiteralShorthandProperties": true,  // enable object literal shorthand properties
-    "octalLiterals": false,                     // enable octal literals
-    "regexUFlag": false,                        // enable the regular expression u flag
-    "regexYFlag": false,                        // enable the regular expression y flag
-    "templateStrings": true,                   // enable template strings
-    "unicodeCodePointEscapes": false,           // enable code point escapes
-    "jsx": false                                // enable JSX
-  },
-
   "parserOptions": {
       "sourceType": "module",
-      "ecmaVersion": 8
+      "ecmaVersion": 8,
+      "ecmaFeatures": {
+        "binaryLiterals": false,                    // enable binary literals
+        "blockBindings": true,                     // enable let and const (aka block bindings)
+        "defaultParams": true,                     // enable default function parameters
+        "forOf": false,                             // enable for-of loops
+        "generators": false,                        // enable generators
+        "objectLiteralComputedProperties": false,   // enable computed object literal property names
+        "objectLiteralDuplicateProperties": false,  // enable duplicate object literal properties in strict mode
+        "objectLiteralShorthandMethods": false,     // enable object literal shorthand methods
+        "objectLiteralShorthandProperties": true,  // enable object literal shorthand properties
+        "octalLiterals": false,                     // enable octal literals
+        "regexUFlag": false,                        // enable the regular expression u flag
+        "regexYFlag": false,                        // enable the regular expression y flag
+        "templateStrings": true,                   // enable template strings
+        "unicodeCodePointEscapes": false,           // enable code point escapes
+        "jsx": false                                // enable JSX
+      },
   },
 
   "env": {
     "browser": false,     // browser global variables.
-    "node": true,        // Node.js global variables and Node.js-specific rules.
+    "node": true,         // Node.js global variables and Node.js-specific rules.
     "es6": true,
     "amd": false,         // defines require() and define() as global variables as per the amd spec.
-    "mocha": false,       // adds all of the Mocha testing global variables.
+    "mocha": true,        // adds all of the Mocha testing global variables.
     "jasmine": false,     // adds all of the Jasmine testing global variables for version 1.3 and 2.0.
-    "jest": true,     // adds all of the Jasmine testing global variables for version 1.3 and 2.0.
+    "jest": false,        // adds all of the Jasmine testing global variables for version 1.3 and 2.0.
     "phantomjs": false,   // phantomjs global variables.
     "jquery": false,      // jquery global variables.
     "prototypejs": false, // prototypejs global variables.
