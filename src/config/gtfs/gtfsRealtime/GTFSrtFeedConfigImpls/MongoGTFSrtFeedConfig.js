@@ -11,7 +11,7 @@ class MongoGTFSrtFeedConfig extends GTFSrtFeedConfig {
 
     const mongoUserConfig = MongoUserConfigFactory.build(options)
 
-    Object.assign(this, mongoUserConfig, mongoUserConfig)
+    Object.assign(this, mongoUserConfig, options)
   }
 }
 
