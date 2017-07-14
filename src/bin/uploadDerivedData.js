@@ -57,7 +57,6 @@ const mongoReadWriteUserConfig = MongoUserConfigFactory.build({ feedName, userLe
 
 const gtfsDataDeriver = new GTFSDataDeriver()
 
-console.log(JSON.stringify(gtfsConfig, null, 4))
 
 let gtfsConverterService
 let derivedDataUploader

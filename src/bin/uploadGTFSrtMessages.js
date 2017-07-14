@@ -14,7 +14,7 @@ const SerializedGTFSConverterUpdateUploaderFactory =
 
 const argv = require('minimist')(process.argv.slice(2))
 
-const { feedName, gtfsrtSource } = argv
+const { feedName, gtfsrtSource, dataDirectory } = argv
 
 const usageMessage = `USAGE:
 
@@ -41,9 +41,11 @@ const gtfsOptions = {
   feedName,
   gtfs: {
     source: 'FILE',
+    // indexedScheduleDataFilePath: require('path').join(__dirname, '../../data/gtfs/_test_/indexedScheduleData.json')
   },
   gtfsrt: {
-    source: gtfsrtSource
+    source: gtfsrtSource,
+    dataDirectory,
   }
 }
 
@@ -80,7 +82,7 @@ Promise.all([
   .then(
     async () => Promise.all([
       serializedGTFSConverterUpdateUploader.teardown(),
-      gtfsConverterUpdateSerializer.tearDown(),
+      gtfsConverterUpdateSerializer.teardown(),
       gtfsMessageDispatcher.teardown(),
       gtfsConverterService.teardown(),
     ])

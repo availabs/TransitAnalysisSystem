@@ -53,7 +53,7 @@ function _setQueryFilters () {
 // Simply checks to make sure the data directory exists, and gets a list of the files.
 async function _open () {
   const dataFiles = await readdir(this.dataDirectory)
-  this.dataFilesList = dataFiles.sort().reverse()
+  this.dataFilesList = dataFiles.sort().reverse() // Reverse so we can use Array.prototype.pop
 }
 
 function _getTrainTrackerInitialState () {
@@ -67,18 +67,25 @@ async function _next () {
     throw new Error('The FeedHandler is not open.')
   }
 
-  if (!this.dataFilesList.length) {
-    return null
+  // If the decoder fails on a message, go to the next file in the list.
+  while (true) {
+    if (!this.dataFilesList.length) {
+      return null
+    }
+
+    try {
+      const dataFileName = this.dataFilesList.pop()
+      const dataFilePath = path.join(this.dataDirectory, dataFileName)
+
+      const data = await readFile(dataFilePath)
+
+      const gtfsrtJSON = this.protobufDecoder(data)
+
+      return gtfsrtJSON
+    } catch (err) {
+      console.error(err)
+    }
   }
-
-  const dataFileName = this.dataFilesList.pop()
-  const dataFilePath = path.join(this.dataDirectory, dataFileName)
-
-  const data = await readFile(dataFilePath)
-
-  const gtfsrtJSON = this.protobufDecoder(data)
-
-  return gtfsrtJSON
 }
 
 function _stream () {
