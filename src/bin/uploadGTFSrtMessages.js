@@ -11,6 +11,11 @@ const GTFSConverterUpdateSerializer = require('../gtfs/interpreters/GTFSConverte
 const SerializedGTFSConverterUpdateUploaderFactory =
     require('../storage/mongo/gtfs/uploaders/SerializedGTFSConverterUpdateUploaderFactory')
 
+const GTFSDataDeriver = require('../gtfs/interpreters/GTFSDataDeriver')
+const GTFSDerivedDataUploaderFactory =
+    require('../storage/mongo/gtfs/uploaders/GTFSDerivedDataUploaderFactory')
+
+
 
 const argv = require('minimist')(process.argv.slice(2))
 
@@ -25,6 +30,8 @@ const usageMessage = `USAGE:
   * the gtfsrtSource argument is required. It specifies the source of the GTFSrt messages.
 
       --gtfsrtSource=MONGO|LIVE|FILE
+
+  * if using gtfsrtSource=FILE, you can provide the --dataDirectory=<directory path> argument
 
   * example:
 
@@ -54,26 +61,36 @@ const mongoReadWriteUserConfig = MongoUserConfigFactory.build({ feedName, userLe
 
 const gtfsConverterUpdateSerializer = new GTFSConverterUpdateSerializer()
 
+const gtfsDataDeriver = new GTFSDataDeriver()
 
 let gtfsConverterService
 let serializedGTFSConverterUpdateUploader
+let derivedDataUploader
 let gtfsMessageDispatcher
 
 Promise.all([
   GTFSConverterServiceFactory.build(gtfsConfig),
-  SerializedGTFSConverterUpdateUploaderFactory.build(mongoReadWriteUserConfig)
+  SerializedGTFSConverterUpdateUploaderFactory.build(mongoReadWriteUserConfig),
+  GTFSDerivedDataUploaderFactory.build(mongoReadWriteUserConfig),
 ])
   .then(
-    ([ _gtfsConverterService, _serializedGTFSConverterUpdateUploader ]) => {
+    ([ _gtfsConverterService,
+      _serializedGTFSConverterUpdateUploader,
+      _derivedDataUploader,
+    ]) => {
 
       // put these in the file scope for later use
       gtfsConverterService = _gtfsConverterService
       serializedGTFSConverterUpdateUploader = _serializedGTFSConverterUpdateUploader
+      derivedDataUploader = _derivedDataUploader
 
       gtfsMessageDispatcher = new GTFSMessageDispatcher({ gtfsConverterService })
 
       gtfsMessageDispatcher.registerListener(gtfsConverterUpdateSerializer)
+      gtfsMessageDispatcher.registerListener(gtfsDataDeriver)
+
       gtfsConverterUpdateSerializer.registerListener(serializedGTFSConverterUpdateUploader)
+      gtfsDataDeriver.registerListener(derivedDataUploader)
     }
   )
   .then(
