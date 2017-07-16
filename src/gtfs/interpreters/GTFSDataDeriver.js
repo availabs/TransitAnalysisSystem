@@ -74,6 +74,13 @@ async function _receiveMessage (converterUpdate) {
     })
   }
 
+  const gtfsKey2gtfsrtKeyTable =
+    Object.keys(GTFSrt.tripsIndex).reduce(
+      (acc, gtfsrtKey) => {
+        acc[GTFSrt.getGTFSTripKeyForRealtimeTripKey(gtfsrtKey)] = gtfsrtKey
+        return acc
+      }, {})
+
   const vehicleActivity = _.get(siriJSON, vehicleActivityPath, null)
 
   const derivedData = _.reduce(vehicleActivity, (acc, vehAct) => {
@@ -81,7 +88,7 @@ async function _receiveMessage (converterUpdate) {
 
     // FIXME: Subway specific code. Find methods in the Wrappers.
     const gtfsKey = converterUpdate.datedVehicleJourneyRef_to_gtfsTripKeyTable[siriKey]
-    const gtfsrtKey = siriKey.split('_').slice(-2).join('_')
+    const gtfsrtKey = gtfsKey2gtfsrtKeyTable[gtfsKey]
 
     const trainLocationEntry = _.get(converter, getTrainLocationEntryPath(gtfsKey), null)
 

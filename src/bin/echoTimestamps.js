@@ -4,6 +4,7 @@
  * This module's purpose is to test and debug the system.
  */
 
+const _ = require('lodash')
 
 const GTFSConfigFactory = require('../config/gtfs/GTFSConfig/GTFSConfigFactory')
 const GTFSConverterServiceFactory = require('../gtfs/converter/GTFSConverterServiceFactory')
@@ -13,9 +14,7 @@ const STDOUTShoutOut = require('../broadcasting/io/STDOUTShoutOut')
 const GTFSrtTimstampCrier = require('../broadcasting/gtfs/GTFSrtTimstampCrier')
 
 
-const argv = require('minimist')(process.argv.slice(2))
-
-const { feedName, gtfsrtSource } = argv
+const argv = _.omit(require('minimist')(process.argv.slice(2)), '_')
 
 const usageMessage = `USAGE:
 
@@ -23,30 +22,34 @@ const usageMessage = `USAGE:
 
       --feedName=<feed name>.
 
-  * the gtfsrtSource argument is required. It specifies the source of the GTFSrt messages.
+  * the gtfsrt.source argument is required. It specifies the source of the GTFSrt messages.
 
-      --gtfsrtSource=MONGO|LIVE|FILE
+      --gtfsrt.source=MONGO|LIVE|FILE
 
   * example:
 
-     ./bin/updateGTFSData.js --feedName=mta_subway --gtfsrtSource=MONGO
+     ./bin/updateGTFSData.js --feedName=mta_subway --gtfsrt.source=MONGO
 `
-if (!(feedName && gtfsrtSource)) {
-  console.error(usageMessage)
-  process.exit(1)
-}
-
-const gtfsOptions = {
-  feedName,
+const gtfsOptions = _.merge({
   gtfs: {
     source: 'FILE',
   },
   gtfsrt: {
-    source: gtfsrtSource
-  }
+  // filterConditions: {
+    // startTimestamp: moment(startTime).unix(),
+    // endTimestamp: moment(endTime).unix(),
+    // // routeIds: [4],
+  // }
+  },
+}, argv)
+
+
+if (!(gtfsOptions.feedName && gtfsOptions.gtfsrt.source)) {
+  console.error(usageMessage)
+  process.exit(1)
 }
 
-if (gtfsrtSource.toUpperCase() === 'MONGO') {
+if (gtfsOptions.gtfsrt.source.toUpperCase() === 'MONGO') {
   gtfsOptions.userLevel = 'READ_ONLY'
 }
 
@@ -54,6 +57,8 @@ const stdoutShoutOut = new STDOUTShoutOut()
 const gtfsrtTimstampCrier = new GTFSrtTimstampCrier()
 
 gtfsrtTimstampCrier.registerListener(stdoutShoutOut)
+
+
 const gtfsConfig = GTFSConfigFactory.build(gtfsOptions)
 
 GTFSConverterServiceFactory.build(gtfsConfig)
