@@ -5,6 +5,7 @@ const _ = require('lodash')
 const moment = require('moment')
 const csv = require('fast-csv')
 
+
 const corsMiddleware = require('restify-cors-middleware')
 
 const feedName = 'mta_subway'
@@ -21,6 +22,7 @@ const mongoConfig = MongoUserConfigFactory.build({ feedName, userLevel: 'READ_ON
 const {
   mongoURL,
   dotPlaceholder,
+  gtfsrtCollectionName,
   derivedDataCollectionName,
 } = mongoConfig
 
@@ -68,9 +70,47 @@ const mongoKeyHandler = new MongoKeyHandler(dotPlaceholder)
 server.get('/report/:startTime', handleDerivedDataRequest)
 server.get('/report/:startTime/to/:endTime', handleDerivedDataRequest)
 
+server.get('/raw/:startTime', handleRawDataRequest)
+server.get('/raw/:startTime/to/:endTime', handleRawDataRequest)
+
 server.listen('9009', () =>
   console.log('%s listening at %s', server.name, server.url)
 )
+
+
+function handleRawDataRequest (req, res, next) {
+  const mongoQuery = {
+    _id: {
+      $gte: moment(req.params.startTime).unix(),
+    },
+  }
+
+  if (req.params.endTime) {
+    mongoQuery._id.$lt = moment(req.params.endTime).unix()
+  }
+
+  console.log(moment(req.params.startTime))
+  console.log(moment(req.params.endTime))
+  console.log(mongoQuery)
+
+  // TODO: DRY this out. Copied directly from bin/writeCSVReport.js
+  db.collection(gtfsrtCollectionName)
+    .find(mongoQuery, {}, { sort: '_id' })
+    .stream()
+    .pipe(
+      new Transform({
+        readableObjectMode: true,
+        writableObjectMode: true,
+        transform (chunk, encoding, callback) {
+          const data = mongoKeyHandler.restoreKeys(chunk.state)
+          this.push(new Buffer(JSON.stringify(data)))
+          callback(null)
+        }
+      })
+    ).pipe(res)
+    .on('end', next)
+}
+
 
 
 function handleDerivedDataRequest (req, res, next) {
