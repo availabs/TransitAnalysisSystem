@@ -67,7 +67,7 @@ async function _receiveMessage (converterUpdate) {
     if (this.curSched) {
       await Promise.all(
         this.listeners.map(
-          (listener) => listener.receiveMessage({ date, mareySchedData: this.curSched })
+          (listener) => listener.receiveMessage({ date: this.curDate, mareySchedData: this.curSched })
         )
       )
     }
@@ -108,7 +108,11 @@ async function _receiveMessage (converterUpdate) {
       || GTFSrt.getRouteIDForTrip(gtfsrtKey)
 
     if (tripData.stopSched === undefined) {
-      const schedStopTimes = _.get(GTFS, ['indexedScheduleData','stop_times', gtfsKey, 'stopInfoBySequenceNumber'], null)
+      const schedStopTimes = _.get(
+        GTFS,
+        ['indexedScheduleData', 'stop_times', gtfsKey, 'stopInfoBySequenceNumber'],
+        null
+      )
 
       tripData.stopSched = schedStopTimes &&
           schedStopTimes.filter(s => s)
