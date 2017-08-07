@@ -20,8 +20,7 @@ const siriKeyPath = [
   'DatedVehicleJourneyRef',
 ]
 
-// TODO: Actors need to take take sub-actors
-// TODO: Actors need to be able to communicate with actors
+
 class MareyScheduleDataExtractor {
   constructor (config = {}) {
     const that = {
@@ -136,12 +135,7 @@ async function _receiveMessage (converterUpdate) {
 
     const atStop = ((eta - positionTimestamp) <= AT_STOP_THRESHOLD_SECS)
 
-    // There have been false arrivals observered. This should undo them.
-    if (!atStop && tripData.tripStops[stopId]) {
-      tripData.tripStops[stopId] = undefined
-    } else if (atStop && !tripData.tripStops[stopId]) {
-      tripData.tripStops[stopId] = positionTimestamp
-    }
+    tripData.tripStops[stopId] = { [atStop ? 'ata' : 'eta']: atStop ? positionTimestamp : eta }
   })
 }
 

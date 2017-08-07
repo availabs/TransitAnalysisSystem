@@ -5,14 +5,16 @@
  */
 
 const _ = require('lodash')
-// const moment = require('moment')
+const moment = require('moment')
+
+const outFilePath = '/tmp/marey.json'
 
 const GTFSConfigFactory = require('../config/gtfs/GTFSConfig/GTFSConfigFactory')
 const GTFSConverterServiceFactory = require('../gtfs/converter/GTFSConverterServiceFactory')
 const GTFSMessageDispatcher = require('../gtfs/dispatcher/GTFSMessageDispatcher')
 
-const STDOUTShoutOut = require('../broadcasting/io/STDOUTShoutOut')
-const GTFSrtTimstampCrier = require('../broadcasting/gtfs/GTFSrtTimstampCrier')
+const FSScribe = require('../broadcasting/io/FSScribe')
+const MareySchedDataExtractor = require('../gtfs/interpreters/MareySchedDataExtractor')
 
 
 const argv = _.omit(require('minimist')(process.argv.slice(2)), '_')
@@ -36,11 +38,10 @@ const gtfsOptions = _.merge({
     source: 'FILE',
   },
   gtfsrt: {
-    // filterConditions: {
-    //   startTimestamp: moment().startOf('day').unix(),
-    //   endTimestamp: moment().endOf('day').unix(),
-    //   // routeIds: [4],
-    // }
+    filterConditions: {
+      startTimestamp: moment('2017-08-05 00:00:00').unix(),
+      endTimestamp: moment('2017-08-08 00:00:01').unix(),
+    }
   },
 }, argv)
 
@@ -54,10 +55,10 @@ if (gtfsOptions.gtfsrt.source.toUpperCase() === 'MONGO') {
   gtfsOptions.userLevel = 'READ_ONLY'
 }
 
-const stdoutShoutOut = new STDOUTShoutOut()
-const gtfsrtTimstampCrier = new GTFSrtTimstampCrier()
+const fsScribe = new FSScribe({ path: outFilePath })
+const mareySchedDataExtractor = new MareySchedDataExtractor()
 
-gtfsrtTimstampCrier.registerListener(stdoutShoutOut)
+mareySchedDataExtractor.registerListener(fsScribe)
 
 
 const gtfsConfig = GTFSConfigFactory.build(gtfsOptions)
@@ -68,7 +69,7 @@ GTFSConverterServiceFactory.build(gtfsConfig)
   )
   .then(
     (gtfsMessageDispatcher) => {
-      gtfsMessageDispatcher.registerListener(gtfsrtTimstampCrier)
+      gtfsMessageDispatcher.registerListener(mareySchedDataExtractor)
       return gtfsMessageDispatcher.run()
     }
   )
